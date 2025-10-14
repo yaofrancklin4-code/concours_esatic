@@ -1,0 +1,306 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Inscription Concours ESATIC — Formulaire Complet</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #4b0082;
+        --accent: #ff4081;
+        --bg: #f4f7fc;
+        --card: #ffffff;
+        --border: #d1d5db;
+        --shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+        --muted: #6b7280;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Poppins", sans-serif;
+        background: var(--bg);
+        color: #1a1a2e;
+      }
+      header {
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        color: white;
+        padding: 40px 20px;
+        text-align: center;
+      }
+      nav.menu {
+        text-align: center;
+        margin-top: 16px;
+        background: white;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+      }
+      nav.menu a {
+        display: inline-block;
+        margin: 0 12px;
+        padding: 10px 16px;
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      nav.menu a.active,
+      nav.menu a:hover {
+        background: var(--accent);
+        color: white;
+        border-radius: 8px;
+      }
+      .container {
+        max-width: 1000px;
+        margin: 32px auto;
+        padding: 0 20px;
+      }
+      .card {
+        background: var(--card);
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: var(--shadow);
+        margin-bottom: 32px;
+        border: 1px solid var(--border);
+      }
+      h2 {
+        margin-bottom: 16px;
+        color: var(--primary);
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: var(--primary);
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        margin-bottom: 12px;
+        font-size: 15px;
+      }
+      .actions {
+        margin-top: 20px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      button {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 15px;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+      }
+      .btn-outline {
+        background: white;
+        border: 1px solid var(--primary);
+        color: var(--primary);
+      }
+      footer {
+        text-align: center;
+        padding: 24px 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>Inscription Concours ESATIC</h1>
+      <p>Formulaire complet — Session 2025</p>
+    </header>
+    
+
+    <nav class="menu">
+      <a href="{% url 'home' %}">Accueil</a>
+      <a href="{% url 'inscription' %}" class="active">Inscription</a>
+      <a href="{% url 'contact' %}">Contact</a>
+    </nav>
+
+    <div class="container">
+      <div class="card">
+        <h2>Formulaire d'inscription</h2>
+        <form id="formCandidat">
+          <h3>Identité du candidat</h3>
+          <label>Nom *</label><input name="nom" required />
+          <label>Prénom *</label><input name="prenom" required />
+          <label>Genre *</label>
+          <select name="sexe" required>
+            <option value="">-- Choisir --</option>
+            <option>Féminin</option>
+            <option>Masculin</option>
+            <option>Autre</option>
+          </select>
+          <label>Date de naissance *</label
+          ><input type="date" name="date_naissance" required />
+          <label>Lieu de naissance</label><input name="lieu_naissance" />
+          <label>Nationalité</label><input name="nationalite" />
+
+          <h3>Contact</h3>
+          <label>Email *</label><input type="email" name="email" required />
+          <label>Téléphone</label><input type="tel" name="telephone" />
+          <label>Adresse actuelle</label
+          ><textarea name="adresse" rows="2"></textarea>
+
+          <h3>Formation & Diplômes</h3>
+          <label>Établissement d'origine</label><input name="ecole" />
+          <label>Niveau d'études actuel</label>
+          <select name="niveau">
+            <option value="">-- Choisir --</option>
+            <option>Terminale</option>
+            <option>BAC+1</option>
+            <option>BAC+2</option>
+            <option>BAC+3 / Licence</option>
+            <option>Master</option>
+          </select>
+          <label>Dernier diplôme obtenu</label><input name="diplome" />
+          <label>Mention</label><input name="mention" />
+          <label>Année d’obtention</label
+          ><input type="number" name="annee_diplome" />
+
+          <h3>Documents requis</h3>
+          <label>Photo d'identité *</label>
+          <input type="file" name="photo" accept="image/*" required />
+          <label>Pièce d'identité *</label>
+          <input
+            type="file"
+            name="piece"
+            accept="image/*,application/pdf"
+            required
+          />
+          <label>CV (optionnel)</label>
+          <input type="file" name="cv" accept="application/pdf" />
+
+          <div class="actions">
+            <button type="submit" class="btn-primary">Valider</button>
+            <button type="reset" class="btn-outline">Réinitialiser</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <footer>
+      <p>© ESATIC — Portail d'inscription 2025</p>
+    </footer>
+
+    <script>
+      const { jsPDF } = window.jspdf;
+
+      document
+        .getElementById("formCandidat")
+        .addEventListener("submit", (e) => {
+          e.preventDefault();
+          const form = e.target;
+          const data = new FormData(form);
+          const nom = data.get("nom");
+          const prenom = data.get("prenom");
+
+          const doc = new jsPDF({ orientation: "p", unit: "mm", format: "a4" });
+          const margin = 15;
+          let y = margin + 10;
+
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(18);
+          doc.text("Fiche d'inscription — Concours ESATIC 2025", margin, y);
+          y += 10;
+          doc.setDrawColor(150, 150, 150);
+          doc.line(margin, y, 195, y);
+          y += 10;
+
+          const addSection = (title) => {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text(title, margin, y);
+            y += 6;
+            doc.setDrawColor(200);
+            doc.line(margin, y, 195, y);
+            y += 6;
+          };
+
+          const addField = (label, value) => {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(11);
+            if (value) {
+              doc.text(`${label}: ${value}`, margin, y);
+              y += 7;
+            }
+          };
+
+          addSection("🧍 Identité du candidat");
+          addField("Nom", data.get("nom"));
+          addField("Prénom", data.get("prenom"));
+          addField("Genre", data.get("sexe"));
+          addField("Date de naissance", data.get("date_naissance"));
+          addField("Lieu de naissance", data.get("lieu_naissance"));
+          addField("Nationalité", data.get("nationalite"));
+
+          y += 5;
+          addSection("📞 Informations de contact");
+          addField("Email", data.get("email"));
+          addField("Téléphone", data.get("telephone"));
+          addField("Adresse", data.get("adresse"));
+
+          y += 5;
+          addSection("🎓 Formation & Diplômes");
+          addField("Établissement d'origine", data.get("ecole"));
+          addField("Niveau actuel", data.get("niveau"));
+          addField("Dernier diplôme", data.get("diplome"));
+          addField("Mention", data.get("mention"));
+          addField("Année d’obtention", data.get("annee_diplome"));
+
+          y += 5;
+          addSection("📎 Documents fournis");
+          addField(
+            "Photo d'identité",
+            data.get("photo") ? "✅ Importée" : "❌ Manquante"
+          );
+          addField(
+            "Pièce d'identité",
+            data.get("piece") ? "✅ Importée" : "❌ Manquante"
+          );
+          addField("CV", data.get("cv") ? "✅ Importé" : "—");
+
+          // Ajouter la photo si disponible et si c'est une image
+          const photoFile = data.get("photo");
+          if (
+            photoFile &&
+            photoFile.size &&
+            photoFile.type.startsWith("image/")
+          ) {
+            const reader = new FileReader();
+            reader.onloadend = (evt) => {
+              const imgData = evt.target.result;
+              doc.addPage();
+              doc.setFontSize(16);
+              doc.text("Photo du candidat", margin, 25);
+              doc.addImage(imgData, "JPEG", margin, 35, 60, 70);
+              doc.save(`${nom}_${prenom}_fiche_ESATIC.pdf`);
+            };
+            reader.readAsDataURL(photoFile);
+          } else {
+            doc.save(`${nom}_${prenom}_fiche_ESATIC.pdf`);
+          }
+
+          alert("✅ Inscription validée ! Le PDF complet a été téléchargé.");
+          form.reset();
+        });
+    </script>
+  </body>
+</html>

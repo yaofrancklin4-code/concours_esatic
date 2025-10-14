@@ -1,0 +1,368 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact — ESATIC</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary: #4b0082;
+        --accent: #ff4081;
+        --bg: #f4f7fc;
+        --card: #ffffff;
+        --border: #d1d5db;
+        --shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+        --muted: #6b7280;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Poppins", sans-serif;
+        background: var(--bg);
+        color: #1a1a2e;
+      }
+
+      /* ====== EN-TÊTE ====== */
+      header {
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        color: white;
+        text-align: center;
+        padding: 50px 20px;
+      }
+      header h1 {
+        margin-bottom: 10px;
+        font-size: 32px;
+      }
+      header p {
+        font-size: 18px;
+        opacity: 0.9;
+      }
+
+      /* ====== MENU ====== */
+      nav.menu {
+        text-align: center;
+        margin-top: 0;
+        background: white;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        padding: 8px 0;
+      }
+      nav.menu a {
+        display: inline-block;
+        margin: 0 12px;
+        padding: 10px 16px;
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.3s;
+      }
+      nav.menu a.active,
+      nav.menu a:hover {
+        background: var(--accent);
+        color: white;
+        border-radius: 8px;
+      }
+
+      /* ====== CONTENU ====== */
+      .container {
+        max-width: 1100px;
+        margin: 40px auto;
+        padding: 0 20px;
+      }
+      .card {
+        background: var(--card);
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: var(--shadow);
+        margin-bottom: 32px;
+        border: 1px solid var(--border);
+      }
+      h2 {
+        color: var(--primary);
+        margin-bottom: 16px;
+      }
+      h3 {
+        color: var(--accent);
+      }
+
+      /* ====== FORMULAIRE ====== */
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: var(--primary);
+      }
+      input,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        margin-bottom: 12px;
+        font-size: 15px;
+      }
+      button {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        background: var(--primary);
+        color: white;
+        font-size: 15px;
+        transition: 0.3s;
+      }
+      button:hover {
+        background: var(--accent);
+      }
+
+      /* ====== ALUMNI ====== */
+      .alumni {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+      }
+      .alumni-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        padding: 16px;
+        text-align: center;
+      }
+      .alumni-card img {
+        width: 100%;
+        border-radius: 12px;
+        height: 200px;
+        object-fit: cover;
+        margin-bottom: 12px;
+      }
+
+      /* ====== CARTE ====== */
+      .map {
+        width: 100%;
+        height: 350px;
+        border-radius: 12px;
+        margin-top: 12px;
+      }
+
+      /* ====== RÉSEAUX SOCIAUX ====== */
+      .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 10px;
+      }
+      .social-links a {
+        color: var(--primary);
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .social-links a:hover {
+        color: var(--accent);
+      }
+
+      /* ====== PIED DE PAGE ====== */
+      footer {
+        text-align: center;
+        padding: 24px;
+        color: var(--muted);
+        background: white;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ====== EN-TÊTE ====== -->
+    <header>
+      div
+      <h1>Contact — ESATIC</h1>
+      <p>
+        École Supérieure Africaine des Technologies de l’Information et de la
+        Communication
+      </p>
+    </header>
+
+    <!-- ====== NAVIGATION ====== -->
+    <nav class="menu">
+      <a href="{% url 'home' %}">🏠 Accueil</a>
+      <a href="{% url 'inscription' %}">📝 Inscription</a>
+      <a href="{% url 'contact' %}" class="active">📞 Contact</a>
+    </nav>
+
+    <div class="container">
+      <!-- ====== PRÉSENTATION ====== -->
+      <div class="card">
+        <h2>🎯 À propos de l’ESATIC</h2>
+        <p>
+          Fondée en 2012, l’<strong>ESATIC</strong> est une école d’excellence
+          publique ivoirienne formant des ingénieurs et experts dans les
+          domaines des <strong>TIC</strong>, du <strong>réseau</strong>, de la
+          <strong>cybersécurité</strong>, du
+          <strong>développement logiciel</strong> et de l’<strong
+            >intelligence artificielle</strong
+          >.
+        </p>
+        <p>
+          L’école vise à répondre aux défis numériques du continent africain en
+          proposant une
+          <strong>formation professionnalisante</strong> et adaptée aux besoins
+          des entreprises.
+        </p>
+        <h3>Nos valeurs</h3>
+        <ul>
+          <li>📘 Excellence académique et scientifique</li>
+          <li>🤝 Innovation et esprit d’équipe</li>
+          <li>🌍 Ouverture internationale</li>
+          <li>💼 Professionnalisme et rigueur</li>
+        </ul>
+      </div>
+
+      <!-- ====== COORDONNÉES ====== -->
+      <div class="card">
+        <h2>📍 Coordonnées officielles</h2>
+        <p>
+          <strong>Adresse :</strong> Boulevard Latrille, Cocody 2 Plateaux,
+          Abidjan, Côte d’Ivoire<br />
+          <strong>Téléphone :</strong> +225 27 22 48 15 34<br />
+          <strong>Email :</strong> contact@esatic.ci<br />
+          <strong>Site web :</strong>
+          <a href="https://www.esatic.ci" target="_blank">www.esatic.ci</a
+          ><br />
+          <strong>Horaires :</strong> Lundi – Vendredi, 08h00 à 17h00
+        </p>
+        <iframe
+          class="map"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3979.708032861934!2d-4.00873822525246!3d5.360827835184695!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1021eb6dd9efc9ed%3A0x4b65c68cf39d36eb!2sESATIC!5e0!3m2!1sfr!2sci!4v1702001234567!5m2!1sfr!2sci"
+          allowfullscreen=""
+          loading="lazy"
+        ></iframe>
+      </div>
+
+      <!-- ====== FORMULAIRE ====== -->
+      <div class="card">
+        <h2>📬 Nous contacter directement</h2>
+        <form id="contactForm">
+          <label>Nom complet *</label>
+          <input type="text" name="nom" required />
+          <label>Email *</label>
+          <input type="email" name="email" required />
+          <label>Sujet *</label>
+          <input type="text" name="sujet" required />
+          <label>Message *</label>
+          <textarea name="message" rows="5" required></textarea>
+          <button type="submit">Envoyer le message</button>
+        </form>
+      </div>
+
+      <!-- ====== ALUMNI ====== -->
+      <div class="card">
+        <h2>🌐 Réseau des anciens étudiants (RAE)</h2>
+        <p>
+          Le
+          <strong>Réseau des Anciens Étudiants de l’ESATIC (RAE)</strong>
+          rassemble plus de <strong>3000 diplômés</strong> présents dans les
+          plus grandes entreprises du monde.
+        </p>
+        <p>
+          Ils œuvrent dans les domaines de la cybersécurité, du cloud computing,
+          des télécoms, du développement web et de l’intelligence artificielle.
+          Le RAE organise chaque année :
+        </p>
+        <ul>
+          <li>Des forums de recrutement et conférences métiers</li>
+          <li>Des sessions de mentorat pour les étudiants</li>
+          <li>Des projets de recherche intergénérationnels</li>
+          <li>Des afterworks et webinaires à l’international</li>
+        </ul>
+
+        <h3>Quelques anciens remarquables</h3>
+        <div class="alumni">
+          <div class="alumni-card">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
+              alt="Alumni 1"
+            />
+            <h3>Jean Kouadio</h3>
+            <p>Ingénieur en cybersécurité — Microsoft Afrique de l’Ouest</p>
+            <p><em>Promotion 2016</em></p>
+          </div>
+          <div class="alumni-card">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
+              alt="Alumni 2"
+            />
+            <h3>Aïssata Traoré</h3>
+            <p>Data Scientist — Google France</p>
+            <p><em>Promotion 2017</em></p>
+          </div>
+          <div class="alumni-card">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
+              alt="Alumni 3"
+            />
+            <h3>Mohamed Diabaté</h3>
+            <p>
+              Entrepreneur — Fondateur de <strong>TechCiv</strong>, startup
+              ivoirienne d’IA
+            </p>
+            <p><em>Promotion 2018</em></p>
+          </div>
+          <div class="alumni-card">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
+              alt="Alumni 4"
+            />
+            <h3>Nathalie N’Guessan</h3>
+            <p>
+              Lauréate du Prix UNESCO 2022 pour l’innovation numérique en
+              Afrique
+            </p>
+            <p><em>Promotion 2015</em></p>
+          </div>
+        </div>
+        div
+      </div>
+
+      <!-- ====== RÉSEAUX SOCIAUX ====== -->
+      <div class="card" style="text-align: center">
+        <h2>🔗 Suivez-nous sur les réseaux</h2>
+        <div class="social-links">
+          <a href="https://www.facebook.com/EsaticCI" target="_blank"
+            >Facebook</a
+          >
+          <a href="https://www.linkedin.com/school/esatic" target="_blank"
+            >LinkedIn</a
+          >
+          <a href="https://twitter.com/EsaticCi" target="_blank">X (Twitter)</a>
+          <a href="https://www.instagram.com/esatic_ci" target="_blank"
+            >Instagram</a
+          >
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>
+        © ESATIC — Portail officiel 2025 | Conçu pour le concours d'entrée et le
+        réseau des anciens
+      </p>
+    </footer>
+
+    <script>
+      document.getElementById("contactForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        alert("✅ Message envoyé avec succès ! Nous vous répondrons sous peu.");
+        e.target.reset();
+      });
+    </script>
+  </body>
+</html>
