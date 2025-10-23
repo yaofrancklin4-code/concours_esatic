@@ -1,0 +1,70 @@
+name: Django CI/CD - AWS
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Cloner le dépôt
+        uses: actions/checkout@v3
+
+      - name: 🐍 Installer Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: 📦 Installer les dépendances
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🔧 Effectuer les migrations Django
+        run: |
+          python manage.py makemigrations
+          python manage.py migrate
+
+      - name: 📁 Collecter les fichiers statiques
+        run: python manage.py collectstatic --noinput
+
+      - name: 🧪 Lancer les tests Django
+        run: python manage.py test
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Cloner le dépôt
+        uses: actions/checkout@v3
+
+      - name: 🐍 Installer Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: 📦 Installer les dépendances
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install awsebcli
+
+      - name: 🔧 Effectuer les migrations Django
+        run: |
+          python manage.py makemigrations
+          python manage.py migrate
+
+      - name: 📁 Collecter les fichiers statiques
+        run: python manage.py collectstatic --noinput
+
+      - name: 🚀 Déployer sur AWS Elastic Beanstalk
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          eb init ${{ secrets.EB_APP_NAME }} --platform python-3.11 --region us-east-1
+          eb use ${{ secrets.EB_ENV_NAME }}
+          eb deploy
