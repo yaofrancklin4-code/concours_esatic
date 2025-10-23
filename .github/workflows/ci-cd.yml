@@ -44,16 +44,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Create deployment package
-        run: zip -r application.zip . -x ".git/*" "__pycache__/*" "*.sqlite3" "env/*" "env1/*" "env2/*" "env3/*" "envfranck/*" "envfrancklin/*" "venv/*" "monsite/*"
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install awsebcli
+
+      - name: Run migrations
+        run: |
+          python manage.py makemigrations
+          python manage.py migrate
+
+      - name: Collect static files
+        run: python manage.py collectstatic --noinput
 
       - name: Deploy to AWS Elastic Beanstalk
-        uses: einaregilsson/beanstalk-deploy@v20
-        with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: ${{ secrets.EB_APP_NAME }}
-          environment_name: ${{ secrets.EB_ENV_NAME }}
-          region: "us-east-1"
-          version_label: ${{ github.run_number }}
-          deployment_package: "application.zip"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          eb init ${{ secrets.EB_APP_NAME }} --platform python-3.11 --region us-east-1
+          eb use ${{ secrets.EB_ENV_NAME }}
+          eb deploy
