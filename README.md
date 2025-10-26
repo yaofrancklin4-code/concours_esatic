@@ -19,8 +19,8 @@ L'application "Mon_appli" comprend trois pages principales :
 
 2. Créez un environnement virtuel :
    ```bash
-   python -m venv env
-   source env/bin/activate  # Sur Windows : env\Scripts\activate
+   python -m venv newenv
+   source newenv/bin/activate  # Sur Windows : newenv\Scripts\activate
    ```
 
 3. Installez les dépendances :
@@ -46,24 +46,89 @@ L'application "Mon_appli" comprend trois pages principales :
 
 L'application sera accessible à l'adresse http://127.0.0.1:8000/
 
-## Déploiement
+## Déploiement sur AWS
 
-Le projet utilise un pipeline CI/CD GitHub Actions pour le déploiement automatique sur AWS Elastic Beanstalk.
+Le projet utilise un **pipeline CI/CD automatisé** avec GitHub Actions pour le déploiement sur AWS Elastic Beanstalk.
 
-### Prérequis pour le déploiement
+### 🚀 Architecture du Pipeline CI/CD
 
-1. Créez une application Elastic Beanstalk sur AWS.
-2. Configurez les secrets suivants dans les paramètres de votre dépôt GitHub :
-   - `AWS_ACCESS_KEY_ID` : Votre clé d'accès AWS
-   - `AWS_SECRET_ACCESS_KEY` : Votre clé secrète AWS
-   - `EB_APP_NAME` : Nom de votre application Elastic Beanstalk
-   - `EB_ENV_NAME` : Nom de l'environnement Elastic Beanstalk
+Le pipeline est automatiquement déclenché à chaque push sur la branche `main` et effectue :
 
-### Pipeline CI/CD
+1. **Build** : Installation des dépendances
+2. **Tests** : Exécution des tests Django
+3. **Collecte** : Collecte des fichiers statiques
+4. **Déploiement** : Déploiement automatique sur AWS Elastic Beanstalk
 
-Le pipeline effectue les étapes suivantes :
-- **Build** : Installation des dépendances, migrations Django, collecte des fichiers statiques, exécution des tests
-- **Deploy** : Déploiement sur AWS Elastic Beanstalk
+### 📋 Prérequis pour le déploiement
+
+#### 1. Créer une application AWS Elastic Beanstalk
+
+Sur AWS Console :
+- Allez dans **Elastic Beanstalk**
+- Créez une nouvelle application
+- Choisissez la plateforme **Python 3.11**
+- Nommez votre environnement (ex: `concours-esatic-env`)
+
+#### 2. Configurer les secrets GitHub
+
+Dans votre dépôt GitHub, allez dans :
+**Settings → Secrets and variables → Actions**
+
+Ajoutez ces secrets :
+
+| Secret | Description | Exemple |
+|--------|-------------|---------|
+| `AWS_ACCESS_KEY_ID` | Clé d'accès AWS IAM | `AKIAIOSFODNN7EXAMPLE` |
+| `AWS_SECRET_ACCESS_KEY` | Clé secrète AWS IAM | `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY` |
+| `EB_APP_NAME` | Nom de l'app Elastic Beanstalk | `concours-esatic` |
+| `EB_ENV_NAME` | Nom de l'environnement | `concours-esatic-env` |
+| `AWS_REGION` | Région AWS (optionnel) | `eu-west-1` |
+| `SECRET_KEY` | Clé secrète Django | `votre-cle-secrete` |
+| `DEBUG` | Mode debug (True/False) | `False` |
+
+#### 3. Configurer les variables d'environnement sur AWS
+
+Dans Elastic Beanstalk → Configuration → Software :
+- Ajoutez `DEBUG=False`
+- Ajoutez `SECRET_KEY=votre-cle-secrete`
+
+### 🔧 Configuration du Pipeline
+
+Le fichier `.github/workflows/deploy.yml` contient la configuration complète du pipeline :
+
+```yaml
+on:
+  push:
+    branches:
+      - main  # Se déclenche sur push vers main
+```
+
+### 🌐 Accès à l'application
+
+Une fois déployée, votre application sera accessible à l'URL :
+```
+http://votre-environnement.region.elasticbeanstalk.com
+```
+
+### 📦 Méthodes de déploiement
+
+#### Option 1 : Elastic Beanstalk (Recommandé)
+- ✅ Simple et rapide
+- ✅ Gestion automatique du scaling
+- ✅ Configuration via Procfile
+
+#### Option 2 : Docker sur ECS
+- Utilisez le fichier `Dockerfile` fourni
+- Déployez sur AWS ECS ou EC2
+
+#### Option 3 : Déploiement manuel
+```bash
+# Créer un fichier ZIP
+zip -r deploy.zip . -x "*.git*" "venv/*" "*.pyc"
+
+# Uploader via la console AWS EB
+eb deploy
+```
 
 ## Structure du projet
 
@@ -88,7 +153,10 @@ Test/
 │   └── wsgi.py
 ├── .github/
 │   └── workflows/
-│       └── ci-cd.yml
+│       └── deploy.yml
+├── .gitignore
+├── Dockerfile
+├── Procfile
 ├── db.sqlite3
 ├── manage.py
 ├── requirements.txt
@@ -101,7 +169,35 @@ Test/
 - **Python** 3.11
 - **AWS Elastic Beanstalk** pour le déploiement
 - **GitHub Actions** pour le CI/CD
+- **Gunicorn** pour le serveur WSGI
+- **WhiteNoise** pour les fichiers statiques
+
+## 🔐 Sécurité
+
+- ✅ `.gitignore` configuré pour exclure les secrets
+- ✅ `DEBUG=False` en production
+- ✅ Variables d'environnement pour les clés secrètes
+- ✅ `ALLOWED_HOSTS` configuré pour AWS
+
+## 🐛 Dépannage
+
+### Le pipeline échoue
+- Vérifiez que tous les secrets sont configurés
+- Vérifiez que l'environnement EB existe
+- Consultez les logs GitHub Actions
+
+### Erreur 404 sur les fichiers statiques
+- Vérifiez que `collectstatic` s'exécute dans le pipeline
+- Vérifiez la configuration WhiteNoise
+
+### Base de données
+- SQLite pour le développement
+- Utilisez PostgreSQL ou MySQL pour la production
 
 ## Auteur
 
 [yaofrancklin4-code](https://github.com/yaofrancklin4-code)
+
+## Licence
+
+Ce projet est développé pour le concours ESATIC.
