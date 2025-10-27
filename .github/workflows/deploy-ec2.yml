@@ -19,9 +19,9 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Run Django checks / migrations (local validation)
+      - name: Run Django checks (local validation)
         env:
           DJANGO_SETTINGS_MODULE: Test.settings
         run: |
@@ -56,12 +56,9 @@ jobs:
             set -e
             DEPLOY_DIR="/home/${{ secrets.SSH_USER }}/django-app"
             TMP_DIR="/home/${{ secrets.SSH_USER }}/deploy_tmp"
-            # create deploy dir if needed
             mkdir -p "$DEPLOY_DIR"
-            # sync (overwrite)
             rsync -av --delete "$TMP_DIR"/ "$DEPLOY_DIR"/
             cd "$DEPLOY_DIR"
-            # create venv if missing
             if [ ! -d venv ]; then
               python3 -m venv venv
             fi
@@ -71,9 +68,7 @@ jobs:
             export DJANGO_SETTINGS_MODULE=Test.settings
             python manage.py migrate --noinput
             python manage.py collectstatic --noinput
-            # restart services (assumes gunicorn systemd service exists)
             sudo systemctl daemon-reload || true
             sudo systemctl restart gunicorn || true
             sudo systemctl restart nginx || true
-            # cleanup tmp
             rm -rf "$TMP_DIR"
