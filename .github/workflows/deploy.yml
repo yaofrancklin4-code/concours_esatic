@@ -1,4 +1,4 @@
-name: Deploy Django App to AWS Elastic Beanstalk
+name: Deploy Django App to EC2 via SSH
 
 on:
   push:
@@ -34,35 +34,54 @@ jobs:
         run: |
           python manage.py test --verbosity=2 || echo "No tests found"
 
-      - name: Prepare deployment package
-        run: |
-          zip -r deploy.zip . \
-            -x "*.git*" \
-            -x "*.pyc" \
-            -x "__pycache__/*" \
-            -x "*.log" \
-            -x ".env*" \
-            -x "venv/*" \
-            -x "env/*" \
-            -x "newenv/*" \
-            -x "envf/*" \
-            -x "*.swp" \
-            -x "*.swo" \
-            -x ".vscode/*" \
-            -x ".idea/*"
-
-      - name: Deploy to AWS Elastic Beanstalk
-        uses: einaregilsson/beanstalk-deploy@v22
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: ${{ secrets.EB_APP_NAME || 'concours-esatic' }}
-          environment_name: ${{ secrets.EB_ENV_NAME || 'concours-esatic-env' }}
-          region: ${{ secrets.AWS_REGION || 'eu-west-1' }}
-          version_label: v-${{ github.run_number }}-${{ github.sha }}
-          deployment_package: deploy.zip
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          script: |
+            # Create project directory if it doesn't exist
+            mkdir -p /home/ubuntu/django-app
 
-      - name: Cleanup
-        if: always()
-        run: |
-          rm -f deploy.zip
+            # Copy gunicorn service file
+            sudo cp /home/ubuntu/django-app/gunicorn.service /etc/systemd/system/ || true
+            sudo systemctl daemon-reload || true
+
+      - name: Sync files to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          source: "."
+          target: "/home/ubuntu/django-app"
+          strip_components: 0
+          exclude: |
+            .git/
+            *.pyc
+            __pycache__/
+            *.log
+            .env*
+            venv/
+            env/
+            newenv/
+            envf/
+            *.swp
+            *.swo
+            .vscode/
+            .idea/
+
+      - name: Run deployment script on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          script: |
+            cd /home/ubuntu/django-app
+            chmod +x deploy.sh
+            ./deploy.sh

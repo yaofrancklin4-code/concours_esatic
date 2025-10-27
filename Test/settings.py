@@ -26,7 +26,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-ztro0vv7nidu4sceu%i3#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.elasticbeanstalk.com', '.amazonaws.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', os.environ.get('EC2_IP', ''), '.elasticbeanstalk.com', '.amazonaws.com']
 
 
 # Application definition

@@ -1,4 +1,4 @@
-# TODO - Pipeline CI/CD AWS
+# TODO - Pipeline CI/CD EC2 SSH Deployment
 
 ## ✅ Terminé
 - [x] Analyser la configuration existante du pipeline
@@ -6,47 +6,44 @@
 - [x] Confirmer que tous les composants sont présents
 
 ## 🔄 En cours
-- [ ] Créer un utilisateur IAM AWS pour le déploiement
-- [ ] Configurer les secrets GitHub (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, EB_APP_NAME, EB_ENV_NAME, AWS_REGION, SECRET_KEY)
-- [ ] Tester le pipeline en poussant sur main
-- [ ] Vérifier le déploiement sur AWS Elastic Beanstalk
+- [ ] Update .github/workflows/deploy.yml to use SSH deployment
+- [ ] Create deploy.sh script for EC2 setup and deployment
+- [ ] Create gunicorn.service systemd file
+- [ ] Update Test/settings.py ALLOWED_HOSTS for EC2
+- [ ] Update DEPLOYMENT.md for EC2 guide
+- [ ] Manual EC2 setup (Ubuntu, Python, virtualenv, nginx if needed)
+- [ ] Configure SSH key in GitHub secrets
+- [ ] Test the pipeline
 
 ## 📋 Instructions pour l'utilisateur
 
-### 1. Créer un utilisateur IAM AWS
-1. Aller dans la console AWS → IAM → Users → Create user
-2. Nom : `github-actions-deploy`
-3. Type d'accès : Programmatic access
-4. Politique : `AWSElasticBeanstalkFullAccess`
-5. Sauvegarder les clés :
-   - AWS_ACCESS_KEY_ID
-   - AWS_SECRET_ACCESS_KEY
+### 1. Setup EC2 Instance
+1. Launch Ubuntu EC2 instance
+2. Install Python 3.11, virtualenv, nginx
+3. Create project directory: `/home/ubuntu/django-app`
+4. Setup SSH key for GitHub Actions
 
-### 2. Configurer les secrets GitHub
-Aller dans votre dépôt GitHub → Settings → Secrets and variables → Actions → New repository secret
+### 2. Configure GitHub Secrets
+Add these secrets to GitHub repository:
+- `SSH_HOST`: EC2 public IP
+- `SSH_USER`: ubuntu
+- `SSH_KEY`: Private SSH key
+- `EC2_IP`: EC2 public IP for ALLOWED_HOSTS
 
-Ajouter ces secrets :
-- `AWS_ACCESS_KEY_ID` : [votre clé d'accès]
-- `AWS_SECRET_ACCESS_KEY` : [votre clé secrète]
-- `EB_APP_NAME` : concours-esatic
-- `EB_ENV_NAME` : concours-esatic-env
-- `AWS_REGION` : eu-west-1
-- `SECRET_KEY` : [générez une clé secrète Django]
-
-### 3. Tester le déploiement
+### 3. Test the deployment
 ```bash
 git add .
-git commit -m "Setup CI/CD pipeline"
+git commit -m "Switch to EC2 SSH deployment"
 git push origin main
 ```
 
-### 4. Vérifier
-- Aller dans GitHub Actions pour voir le pipeline
-- Attendre 5-10 minutes
-- Récupérer l'URL depuis AWS Elastic Beanstalk
-- Tester l'application déployée
+### 4. Verify
+- Check GitHub Actions logs
+- SSH to EC2 and verify app is running
+- Test the application at EC2 IP
 
 ## 🔧 Dépannage
-- Vérifier que tous les secrets sont configurés
-- S'assurer que l'environnement EB existe
-- Consulter les logs GitHub Actions et AWS EB en cas d'erreur
+- Verify SSH connection works
+- Check EC2 security groups (ports 22, 80, 8000)
+- Ensure virtualenv is activated in deploy.sh
+- Check systemd service status

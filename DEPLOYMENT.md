@@ -1,6 +1,6 @@
-# 🚀 Guide de Déploiement AWS
+# 🚀 Guide de Déploiement EC2 SSH
 
-Ce guide vous explique étape par étape comment déployer votre application Django sur AWS Elastic Beanstalk.
+Ce guide vous explique étape par étape comment déployer votre application Django sur AWS EC2 via SSH depuis GitHub Actions.
 
 ## 📋 Table des matières
 
@@ -14,47 +14,71 @@ Ce guide vous explique étape par étape comment déployer votre application Dja
 
 ## Prérequis
 
-- ✅ Compte AWS avec accès à Elastic Beanstalk
+- ✅ Compte AWS avec accès à EC2
 - ✅ Projet Django fonctionnel localement
 - ✅ Compte GitHub
 - ✅ Git installé
 
 ---
 
-## Configuration AWS
+## Configuration AWS EC2
 
-### Étape 1 : Créer une application Elastic Beanstalk
+### Étape 1 : Lancer une instance EC2
 
 1. Connectez-vous à la console AWS
-2. Allez dans **Elastic Beanstalk**
-3. Cliquez sur **Create Application**
-4. Remplissez les informations :
-   - **Application name** : `concours-esatic` (ou votre nom)
-   - **Platform** : Python
-   - **Platform branch** : Python 3.11 running on 64bit Amazon Linux 2
-   - **Platform version** : Latest
-5. Cliquez sur **Create application**
+2. Allez dans **EC2** → **Instances**
+3. Cliquez sur **Launch Instance**
+4. Choisissez **Ubuntu Server 22.04 LTS** (ou plus récent)
+5. Sélectionnez un type d'instance : `t2.micro` (gratuit)
+6. Configurez le stockage : 8GB minimum
+7. **Security Group** : Ajoutez les règles :
+   - SSH (port 22) : `0.0.0.0/0` (temporaire, restreignez plus tard)
+   - HTTP (port 80) : `0.0.0.0/0`
+   - Custom TCP (port 8000) : `0.0.0.0/0` (pour gunicorn)
+8. Lancez l'instance
 
-### Étape 2 : Créer un utilisateur IAM pour le déploiement
+### Étape 2 : Configuration initiale de l'EC2
 
-1. Allez dans **IAM** → **Users** → **Create user**
-2. Nommez l'utilisateur : `github-actions-deploy`
-3. Sélectionnez **Programmatic access**
-4. Attachez la politique : `AWSElasticBeanstalkFullAccess`
-5. **IMPORTANT** : Sauvegardez les clés d'accès :
-   - `AWS_ACCESS_KEY_ID`
-   - `AWS_SECRET_ACCESS_KEY`
+Connectez-vous en SSH à votre instance :
 
-### Étape 3 : Configurer les variables d'environnement
+```bash
+ssh -i your-key.pem ubuntu@your-ec2-ip
+```
 
-1. Dans votre environnement Elastic Beanstalk
-2. Allez dans **Configuration** → **Software**
-3. Ajoutez ces variables d'environnement :
-   ```
-   DEBUG=False
-   SECRET_KEY=votre-cle-secrete-ici
-   ```
-4. Cliquez sur **Apply**
+Installez les dépendances de base :
+
+```bash
+sudo apt update
+sudo apt install -y python3 python3-pip python3-venv nginx
+```
+
+Créez l'environnement virtuel :
+
+```bash
+python3 -m venv /home/ubuntu/venv
+```
+
+Créez le répertoire du projet :
+
+```bash
+mkdir /home/ubuntu/django-app
+```
+
+### Étape 3 : Générer une clé SSH pour GitHub Actions
+
+Sur votre machine locale :
+
+```bash
+ssh-keygen -t rsa -b 4096 -C "github-actions" -f ~/.ssh/github_actions
+```
+
+Ajoutez la clé publique à `~/.ssh/authorized_keys` sur l'EC2 :
+
+```bash
+cat ~/.ssh/github_actions.pub | ssh -i your-ec2-key.pem ubuntu@your-ec2-ip "cat >> ~/.ssh/authorized_keys"
+```
+
+La clé privée sera utilisée dans les secrets GitHub.
 
 ---
 
@@ -69,11 +93,10 @@ Ce guide vous explique étape par étape comment déployer votre application Dja
 
 | Nom du secret | Valeur |
 |---------------|--------|
-| `AWS_ACCESS_KEY_ID` | Votre clé d'accès AWS |
-| `AWS_SECRET_ACCESS_KEY` | Votre clé secrète AWS |
-| `EB_APP_NAME` | `concours-esatic` |
-| `EB_ENV_NAME` | Le nom de votre environnement EB |
-| `AWS_REGION` | `eu-west-1` (ou votre région) |
+| `SSH_HOST` | IP publique de votre EC2 |
+| `SSH_USER` | `ubuntu` |
+| `SSH_KEY` | Contenu de `~/.ssh/github_actions` (clé privée) |
+| `EC2_IP` | IP publique de votre EC2 (pour ALLOWED_HOSTS) |
 | `SECRET_KEY` | Votre clé secrète Django |
 | `DEBUG` | `False` |
 
@@ -81,7 +104,7 @@ Ce guide vous explique étape par étape comment déployer votre application Dja
 
 ```bash
 git add .
-git commit -m "Setup CI/CD pipeline"
+git commit -m "Switch to EC2 SSH deployment"
 git push origin main
 ```
 
@@ -99,54 +122,57 @@ Le pipeline se déclenchera automatiquement !
 4. **Run migrations** : Vérification des migrations
 5. **Collect static** : Collecte des fichiers statiques
 6. **Run tests** : Exécution des tests
-7. **Deploy** : Déploiement sur AWS
+7. **SSH Setup** : Configuration du service systemd
+8. **File Sync** : Synchronisation des fichiers via SCP
+9. **Deploy** : Exécution du script de déploiement
 
 ### Vérifier le déploiement
 
 1. Allez dans **GitHub Actions** → Voir les runs
-2. Attendez que le pipeline se termine (≈ 5-10 minutes)
-3. Récupérez l'URL depuis AWS Elastic Beanstalk
-4. Visitez l'URL pour tester l'application
+2. Attendez que le pipeline se termine (≈ 3-5 minutes)
+3. Visitez `http://your-ec2-ip:8000` pour tester l'application
 
 ---
 
 ## Dépannage
 
-### ❌ Le pipeline échoue à l'étape "Deploy"
+### ❌ Le pipeline échoue à l'étape SSH
 
-**Cause** : Secrets manquants ou incorrects
+**Cause** : Problèmes de connexion SSH
 
 **Solution** :
-1. Vérifiez que tous les secrets sont configurés dans GitHub
-2. Vérifiez que l'environnement EB existe
-3. Vérifiez les permissions IAM
+1. Vérifiez que l'IP EC2 est correcte dans `SSH_HOST`
+2. Vérifiez que la clé SSH est correctement formatée (pas d'espaces en trop)
+3. Vérifiez les permissions du Security Group (port 22 ouvert)
+4. Testez la connexion SSH manuellement
 
 ### ❌ Erreur 500 sur l'application
 
 **Cause** : Variables d'environnement manquantes
 
 **Solution** :
-1. Vérifiez que `DEBUG=False` est configuré sur AWS
-2. Vérifiez que `SECRET_KEY` est défini
-3. Consultez les logs : **AWS EB** → **Logs** → **Request logs**
+1. Vérifiez que `DEBUG=False` et `SECRET_KEY` sont définis
+2. Vérifiez que `EC2_IP` est dans `ALLOWED_HOSTS`
+3. Consultez les logs gunicorn : `sudo journalctl -u gunicorn`
 
 ### ❌ Les fichiers statiques ne se chargent pas
 
 **Cause** : Problème avec WhiteNoise ou collectstatic
 
 **Solution** :
-1. Vérifiez que `collectstatic` s'exécute dans le pipeline
+1. Vérifiez que `collectstatic` s'exécute dans le script deploy.sh
 2. Vérifiez la configuration WhiteNoise dans `settings.py`
 3. Redéployez l'application
 
-### ❌ Erreur de migration de base de données
+### ❌ Gunicorn ne démarre pas
 
-**Cause** : Problèmes avec SQLite en production
+**Cause** : Problème avec le service systemd
 
 **Solution** :
-1. Passez à PostgreSQL ou MySQL
-2. Configurez la base de données dans AWS RDS
-3. Mettez à jour `DATABASES` dans `settings.py`
+1. Vérifiez le statut : `sudo systemctl status gunicorn`
+2. Consultez les logs : `sudo journalctl -u gunicorn`
+3. Vérifiez que le virtualenv existe : `/home/ubuntu/venv`
+4. Redémarrez manuellement : `sudo systemctl restart gunicorn`
 
 ---
 
@@ -158,20 +184,29 @@ Le pipeline se déclenchera automatiquement !
 # Cliquez sur "Actions" dans GitHub pour voir les logs
 ```
 
-### Logs AWS Elastic Beanstalk
+### Logs Gunicorn sur EC2
 
-1. Console AWS → Elastic Beanstalk
-2. Sélectionnez votre environnement
-3. **Logs** → **Request logs**
+```bash
+sudo journalctl -u gunicorn -f
+```
+
+### Status du service
+
+```bash
+sudo systemctl status gunicorn
+sudo systemctl restart gunicorn
+```
 
 ### Déploiement manuel
 
 ```bash
-# Activer l'environnement virtuel
-newenv\Scripts\activate
-
-# Créer le package de déploiement
-eb deploy
+# Sur l'EC2
+cd /home/ubuntu/django-app
+source /home/ubuntu/venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py collectstatic --noinput
+sudo systemctl restart gunicorn
 ```
 
 ---
@@ -191,8 +226,8 @@ eb deploy
 Si vous rencontrez des problèmes :
 
 1. Consultez les logs dans GitHub Actions
-2. Consultez les logs AWS Elastic Beanstalk
+2. Consultez les logs gunicorn sur EC2
 3. Vérifiez la documentation Django deployment
-4. Vérifiez la documentation AWS EB
+4. Vérifiez la documentation AWS EC2
 
 **Bon déploiement ! 🚀**

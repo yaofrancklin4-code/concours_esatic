@@ -1,0 +1,79 @@
+name: Deploy to EC2 via SSH
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi
+
+      - name: Run Django checks / migrations (local validation)
+        env:
+          DJANGO_SETTINGS_MODULE: Test.settings
+        run: |
+          python -m pip install django || true
+          python manage.py check || true
+
+      - name: Collect static (local, optional)
+        env:
+          DJANGO_SETTINGS_MODULE: Test.settings
+        run: |
+          python manage.py collectstatic --noinput || true
+
+      - name: Upload files to EC2
+        uses: appleboy/scp-action@v0.1.9
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          source: "."
+          target: "/home/${{ secrets.SSH_USER }}/deploy_tmp"
+          strip_components: 1
+
+      - name: Run remote deploy script on EC2
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          script: |
+            set -e
+            DEPLOY_DIR="/home/${{ secrets.SSH_USER }}/django-app"
+            TMP_DIR="/home/${{ secrets.SSH_USER }}/deploy_tmp"
+            # create deploy dir if needed
+            mkdir -p "$DEPLOY_DIR"
+            # sync (overwrite)
+            rsync -av --delete "$TMP_DIR"/ "$DEPLOY_DIR"/
+            cd "$DEPLOY_DIR"
+            # create venv if missing
+            if [ ! -d venv ]; then
+              python3 -m venv venv
+            fi
+            . venv/bin/activate
+            pip install --upgrade pip
+            if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+            export DJANGO_SETTINGS_MODULE=Test.settings
+            python manage.py migrate --noinput
+            python manage.py collectstatic --noinput
+            # restart services (assumes gunicorn systemd service exists)
+            sudo systemctl daemon-reload || true
+            sudo systemctl restart gunicorn || true
+            sudo systemctl restart nginx || true
+            # cleanup tmp
+            rm -rf "$TMP_DIR"
