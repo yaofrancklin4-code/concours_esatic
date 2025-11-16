@@ -94,13 +94,19 @@ Dans Elastic Beanstalk → Configuration → Software :
 
 ### 🔧 Configuration du Pipeline
 
-Le fichier `.github/workflows/deploy.yml` contient la configuration complète du pipeline :
+Le fichier `.github/workflows/deploy-aws.yml` contient la configuration complète du pipeline :
 
 ```yaml
 on:
   push:
     branches:
       - main  # Se déclenche sur push vers main
+```
+
+### 🧪 Test Local
+
+```bash
+python deploy_local.py
 ```
 
 ### 🌐 Accès à l'application
