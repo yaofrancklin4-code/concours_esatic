@@ -1,1 +1,6 @@
-web: gunicorn Test.wsgi:application --bind 0.0.0.0:$PORT
+services:
+  - type: web
+    name: concours-esatic
+    env: python
+    buildCommand: pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
+    startCommand: gunicorn Test.wsgi:application --bind 0.0.0.0:$PORT
